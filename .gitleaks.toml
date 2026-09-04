@@ -1,6 +1,7 @@
 # Custom gitleaks rules for org-specific infrastructure identifiers.
-# Use with the pre-commit framework (.pre-commit-config.yaml) or:
-#     gitleaks protect --staged --config .gitleaks.toml
+# Used by the pre-commit hook (.pre-commit-config.yaml) and the CI workflow
+# (.github/workflows/secret-scan.yml):
+#     gitleaks detect --source . --config .gitleaks.toml
 title = "org infra scrub rules"
 
 [[rules]]
@@ -24,11 +25,17 @@ description = "Real internal IP ranges"
 regex = '''\b(10.20.\d+\.\d+|10.20.\d+\.\d+|10.20.\d+|10.20.\d+|10.20.\d+|10.20.\d+|172\.(2\d|30)\.200\.\d+)\b'''
 
 [allowlist]
-description = "placeholder values are allowed"
+description = "placeholders are allowed; the security-config files legitimately name the patterns"
 regexes = [
   '''example\.local''',
   '''10\.20\.\d+\.\d+''',
   '''172\.31\.222\.\d+''',
   '''192\.0\.2\.\d+''',
   '''\bDEMO-''',
+]
+paths = [
+  '''\.githooks[\\/]pre-commit$''',
+  '''\.gitleaks\.toml$''',
+  '''\.pre-commit-config\.yaml$''',
+  '''secret-scan\.yml$''',
 ]
