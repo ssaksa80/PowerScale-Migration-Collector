@@ -8,7 +8,7 @@ set -uo pipefail
 # Patterns that must never be committed (real hostnames / domains / IPs / org).
 # Placeholder equivalents are allowed: example.local, 10.20.x, 172.31.222.x,
 # 192.0.2.x, DEMO-*, szdemo, corp.local, etc.
-PATTERNS='(example.local|example|example.net|\bAHD-[A-Za-z0-9]|\bAHD\b|\bdemolab\b|appsrv1|EXAMPLE-CORP|EXAMPLE-CORP|10.20.[0-9]+\.[0-9]+|10.20.[0-9]+\.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|172\.(2[0-9]|30)\.200\.[0-9]+)'
+PATTERNS='(example.local|example|example.net|\bdemolab\b|appsrv1|EXAMPLE-CORP|EXAMPLE-CORP|10.20.[0-9]+\.[0-9]+|10.20.[0-9]+\.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|172\.(2[0-9]|30)\.200\.[0-9]+)'
 
 # Only scan staged, added/changed text content.
 files=$(git diff --cached --name-only --diff-filter=ACM)

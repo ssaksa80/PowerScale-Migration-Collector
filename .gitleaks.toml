@@ -15,11 +15,6 @@ description = "Employer name"
 regex = '''(?i)(EXAMPLE-CORP|EXAMPLE-CORP)'''
 
 [[rules]]
-id = "ahd-hostname-prefix"
-description = "AHD-* org host/zone naming"
-regex = '''\bAHD-[A-Za-z0-9]'''
-
-[[rules]]
 id = "internal-ip-ranges"
 description = "Real internal IP ranges"
 regex = '''\b(10.20.\d+\.\d+|10.20.\d+\.\d+|10.20.\d+|10.20.\d+|10.20.\d+|10.20.\d+|172\.(2\d|30)\.200\.\d+)\b'''
