@@ -1,0 +1,34 @@
+# Custom gitleaks rules for org-specific infrastructure identifiers.
+# Use with the pre-commit framework (.pre-commit-config.yaml) or:
+#     gitleaks protect --staged --config .gitleaks.toml
+title = "org infra scrub rules"
+
+[[rules]]
+id = "internal-ad-domain"
+description = "Internal AD domain / hostname"
+regex = '''(?i)(example.local|appsrv1|example|example.net|demolab)'''
+
+[[rules]]
+id = "org-name"
+description = "Employer name"
+regex = '''(?i)(EXAMPLE-CORP|EXAMPLE-CORP)'''
+
+[[rules]]
+id = "ahd-hostname-prefix"
+description = "AHD-* org host/zone naming"
+regex = '''\bAHD-[A-Za-z0-9]'''
+
+[[rules]]
+id = "internal-ip-ranges"
+description = "Real internal IP ranges"
+regex = '''\b(10.20.\d+\.\d+|10.20.\d+\.\d+|10.20.\d+|10.20.\d+|10.20.\d+|10.20.\d+|172\.(2\d|30)\.200\.\d+)\b'''
+
+[allowlist]
+description = "placeholder values are allowed"
+regexes = [
+  '''example\.local''',
+  '''10\.20\.\d+\.\d+''',
+  '''172\.31\.222\.\d+''',
+  '''192\.0\.2\.\d+''',
+  '''\bDEMO-''',
+]

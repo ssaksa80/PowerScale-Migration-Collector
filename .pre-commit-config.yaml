@@ -1,0 +1,13 @@
+# Prevents committing real infrastructure identifiers.
+# One-time setup per clone:
+#     pip install pre-commit
+#     pre-commit install
+# Thereafter every `git commit` is scanned. The standalone .githooks/pre-commit
+# script is an alternative that needs no pip install:
+#     git config core.hooksPath .githooks
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+        args: ["protect", "--staged", "--config", ".gitleaks.toml"]
