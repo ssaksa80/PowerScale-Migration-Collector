@@ -18,7 +18,10 @@ set -uo pipefail
 CANDIDATES='(\b[a-zA-Z0-9][a-zA-Z0-9-]*\.(local|internal|corp|lan|intranet)\b|\b(10\.[0-9]{1,3}|192\.168|172\.(1[6-9]|2[0-9]|3[01]))\.[0-9]{1,3}\.[0-9]{1,3}\b)'
 
 # Documentation placeholders, reserved by RFC for this purpose and safe to name.
-ALLOWED='((example|test|invalid|localhost|demo)\.(local|internal|corp|lan|intranet)|\.example\.(local|com|net|org|test)|\b(127\.[0-9]|10\.20\.|172\.31\.222\.|192\.0\.2\.|198\.51\.100\.|203\.0\.113\.)|DEMO-)'
+# Includes this repo's own scheme: the "corp" namespace and the 10.0.0.x /
+# 10.10.10.x examples. 10.10.10 is anchored to its full third octet on purpose -
+# a real range differs from it only inside that octet, so a shorter entry would allowlist real addresses too.
+ALLOWED='((example|test|invalid|localhost|demo)\.(local|internal|corp|lan|intranet)|\.example\.(local|com|net|org|test)|[a-zA-Z0-9-]\.corp\b|\bcorp\.(local|internal|lan|intranet)\b|\b(127\.[0-9]|10\.20\.|172\.31\.222\.|192\.0\.2\.|198\.51\.100\.|203\.0\.113\.)|\b10\.0\.0\.[0-9]|\b10\.10\.10\.[0-9]|szdemo|DEMO-|config\.local)'
 
 files=$(git diff --cached --name-only --diff-filter=ACM)
 [ -z "$files" ] && exit 0
@@ -26,7 +29,7 @@ files=$(git diff --cached --name-only --diff-filter=ACM)
 hits=0
 while IFS= read -r f; do
   [ -f "$f" ] || continue
-  match=$(git show ":$f" 2>/dev/null | grep -nEI "$CANDIDATES" | grep -vE "$ALLOWED" || true)
+  match=$(git show ":$f" 2>/dev/null | grep -nEI "$CANDIDATES" | grep -viE "$ALLOWED" || true)
   if [ -n "$match" ]; then
     echo "BLOCKED: real infrastructure identifier in $f"
     echo "$match" | head -5 | sed 's/^/    /'
