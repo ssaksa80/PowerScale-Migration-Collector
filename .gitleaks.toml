@@ -69,6 +69,10 @@ regexes = [
   '''(?i)\bszdemo\b''',
   # A gitignore entry, not a host: "config.local" is a filename convention.
   '''(?i)\bconfig\.local\b''',
+  # Synthetic bind address used by a deploy test. Checked against the real
+  # ranges before adding: it matches none of them, and the closest one
+  # differs in the second octet.
+  '''\b10\.1\.2\.\d{1,3}\b''',
 ]
 
 # WHAT THIS CANNOT CATCH, stated so nobody assumes otherwise.
