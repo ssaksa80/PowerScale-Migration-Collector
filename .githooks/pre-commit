@@ -2,26 +2,31 @@
 # Self-contained pre-commit guard: blocks commits that reintroduce real
 # infrastructure identifiers into this repo. Activate once per clone with:
 #     git config core.hooksPath .githooks
-# (or use the pre-commit framework via .pre-commit-config.yaml).
+#
+# THIS HOOK MATCHES SHAPES, NOT VALUES, AND EXEMPTS NOTHING.
+#
+# The previous version listed the real AD domain, hostname, mail domains, the
+# employer's registered name and seven internal IP ranges as literals, then
+# skipped itself and .gitleaks.toml when scanning. In a public repository that
+# made the guard the disclosure: the one file guaranteed never to be checked was
+# the file holding every value. Both properties are reversed here - the patterns
+# name nothing real, and no path is exempt, so this file is scanned like any
+# other. See .gitleaks.toml for the full reasoning.
 set -uo pipefail
 
-# Patterns that must never be committed (real hostnames / domains / IPs / org).
-# Placeholder equivalents are allowed: example.local, 10.20.x, 172.31.222.x,
-# 192.0.2.x, DEMO-*, szdemo, corp.local, etc.
-PATTERNS='(example.local|example|example.net|\bdemolab\b|appsrv1|EXAMPLE-CORP|EXAMPLE-CORP|10.20.[0-9]+\.[0-9]+|10.20.[0-9]+\.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|10.20.[0-9]+|172\.(2[0-9]|30)\.200\.[0-9]+)'
+# Candidates: an internal-only namespace host, or a private (RFC 1918) address.
+CANDIDATES='(\b[a-zA-Z0-9][a-zA-Z0-9-]*\.(local|internal|corp|lan|intranet)\b|\b(10\.[0-9]{1,3}|192\.168|172\.(1[6-9]|2[0-9]|3[01]))\.[0-9]{1,3}\.[0-9]{1,3}\b)'
 
-# Only scan staged, added/changed text content.
+# Documentation placeholders, reserved by RFC for this purpose and safe to name.
+ALLOWED='((example|test|invalid|localhost|demo)\.(local|internal|corp|lan|intranet)|\.example\.(local|com|net|org|test)|\b(127\.[0-9]|10\.20\.|172\.31\.222\.|192\.0\.2\.|198\.51\.100\.|203\.0\.113\.)|DEMO-)'
+
 files=$(git diff --cached --name-only --diff-filter=ACM)
 [ -z "$files" ] && exit 0
 
 hits=0
 while IFS= read -r f; do
   [ -f "$f" ] || continue
-  # the security config legitimately names these patterns as detection rules
-  case "$f" in .githooks/pre-commit|.gitleaks.toml|.pre-commit-config.yaml) continue ;; esac
-  # skip obvious binaries
-  if git diff --cached --numstat -- "$f" | grep -q '^-'; then :; fi
-  match=$(git show ":$f" 2>/dev/null | grep -nEI "$PATTERNS" || true)
+  match=$(git show ":$f" 2>/dev/null | grep -nEI "$CANDIDATES" | grep -vE "$ALLOWED" || true)
   if [ -n "$match" ]; then
     echo "BLOCKED: real infrastructure identifier in $f"
     echo "$match" | head -5 | sed 's/^/    /'
@@ -31,9 +36,9 @@ done <<< "$files"
 
 if [ "$hits" -ne 0 ]; then
   echo ""
-  echo "Commit blocked by .githooks/pre-commit — replace real values with placeholders"
-  echo "(example.local, 10.20.x, 172.31.222.x, 192.0.2.x, DEMO-*, szdemo)."
-  echo "To bypass in a genuine false positive: git commit --no-verify"
+  echo "Commit blocked by .githooks/pre-commit - replace real values with placeholders"
+  echo "(example.local, 10.20.x, 172.31.222.x, 192.0.2.x, DEMO-*)."
+  echo "To bypass a genuine false positive: git commit --no-verify"
   exit 1
 fi
 exit 0
