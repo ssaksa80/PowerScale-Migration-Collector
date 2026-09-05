@@ -25,17 +25,25 @@
 # no longer knows which private ranges are actually ours. Both are broader now,
 # not narrower - every RFC 1918 address and every internal-namespace host is
 # flagged, so the failure mode is a false positive, never a silent miss.
+#
+# Every group here is NON-CAPTURING, and that is load-bearing rather than
+# stylistic. gitleaks reports the first capture group as the finding's "secret",
+# and the global allowlist is matched against that secret - so a rule written
+# with a capturing group reports "corp" instead of "prod-nw.corp", and every
+# allowlist entry that names a whole host silently stops applying. That is not
+# visible from the rule, only from the findings: the first version of this file
+# produced 31 findings whose secret was the bare word "corp" or "local".
 title = "org infra scrub rules"
 
 [[rules]]
 id = "internal-namespace-host"
 description = "Host or domain in an internal-only namespace"
-regex = '''(?i)\b[a-z0-9][a-z0-9-]{0,62}\.(local|internal|corp|lan|intranet)\b'''
+regex = '''(?i)\b[a-z0-9][a-z0-9-]{0,62}\.(?:local|internal|corp|lan|intranet)\b'''
 
 [[rules]]
 id = "private-ipv4"
 description = "Private (RFC 1918) IPv4 address"
-regex = '''\b(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})\b'''
+regex = '''\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})\b'''
 
 [allowlist]
 description = "Documentation placeholders, reserved by RFC 5737, 6761 and 2606 and therefore safe to name."
@@ -59,4 +67,20 @@ regexes = [
   '''\b10\.0\.0\.\d{1,3}\b''',
   '''\b10\.10\.10\.\d{1,3}\b''',
   '''(?i)\bszdemo\b''',
+  # A gitignore entry, not a host: "config.local" is a filename convention.
+  '''(?i)\bconfig\.local\b''',
 ]
+
+# WHAT THIS CANNOT CATCH, stated so nobody assumes otherwise.
+#
+# A bare internal hostname - no dot, no namespace suffix - has no shape that
+# distinguishes it from any other word, so no rule here matches one. Neither
+# does the employer's name. Both were caught by the previous version only
+# because it spelled them out, which is what made that version a disclosure in
+# a public repository.
+#
+# That detection has not been recovered, it has been relocated: keep those
+# literals in an UNTRACKED local config and point gitleaks at it for local runs.
+# The committed gate covers the shapes; the value-specific gate stays off the
+# public record. Verified with gitleaks 8.18.4: of four planted real values, the
+# domain and both address ranges are caught and the bare hostname is not.
