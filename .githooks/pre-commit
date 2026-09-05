@@ -19,8 +19,9 @@ CANDIDATES='(\b[a-zA-Z0-9][a-zA-Z0-9-]*\.(local|internal|corp|lan|intranet)\b|\b
 
 # Documentation placeholders, reserved by RFC for this purpose and safe to name.
 # Includes this repo's own scheme: the "corp" namespace and the 10.0.0.x /
-# 10.10.10.x examples. 10.10.10 is anchored to its full third octet on purpose -
-# a real range differs from it only inside that octet, so a shorter entry would allowlist real addresses too.
+# 10.10.10.x examples. The 10.10.10 entry is anchored to its FULL third octet on
+# purpose: a real range differs from it only inside that octet, so a shorter
+# entry would allowlist real addresses too. The real value is not written here.
 ALLOWED='((example|test|invalid|localhost|demo)\.(local|internal|corp|lan|intranet)|\.example\.(local|com|net|org|test)|[a-zA-Z0-9-]\.corp\b|\bcorp\.(local|internal|lan|intranet)\b|\b(127\.[0-9]|10\.20\.|172\.31\.222\.|192\.0\.2\.|198\.51\.100\.|203\.0\.113\.)|\b10\.0\.0\.[0-9]|\b10\.10\.10\.[0-9]|szdemo|DEMO-|config\.local|10\.1\.2\.[0-9])'
 
 files=$(git diff --cached --name-only --diff-filter=ACM)
